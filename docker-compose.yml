@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # PostgreSQLデータベース
+  postgres:
+    image: postgres:15-alpine
+    container_name: lab-attendance-db
+    environment:
+      POSTGRES_USER: labuser
+      POSTGRES_PASSWORD: labpass
+      POSTGRES_DB: lab_attendance
+      TZ: Asia/Tokyo
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U labuser -d lab_attendance" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lab-network
+
+  # バックエンドAPIサーバー
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lab-attendance-backend
+    environment:
+      PORT: 8080
+      ENV: development
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: labuser
+      DB_PASSWORD: labpass
+      DB_NAME: lab_attendance
+      DB_SSLMODE: disable
+      JWT_SECRET: "${JWT_SECRET}"
+      LAB_LATITUDE: 35.6812
+      LAB_LONGITUDE: 139.7671
+      LAB_RADIUS_METERS: 100
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # volumes:
+    #   - ./backend:/app  # 開発時のホットリロード用（本番では不要）
+    networks:
+      - lab-network
+    restart: unless-stopped
+
+  # マイグレーション実行用（プロファイル指定で実行）
+  migrate:
+    image: migrate/migrate:latest
+    container_name: lab-attendance-migrate
+    profiles: [ "migration" ]
+    volumes:
+      - ./backend/db/migrations:/migrations
+    command: [ "-path", "/migrations", "-database", "postgres://labuser:labpass@postgres:5432/lab_attendance?sslmode=disable", "up" ]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - lab-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  lab-network:
+    driver: bridge
