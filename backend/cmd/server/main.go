@@ -2,11 +2,16 @@ package main
 
 import (
 	"log"
-	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/kasa021/watabe-lab-app/internal/config"
+	"github.com/kasa021/watabe-lab-app/internal/database"
+	"github.com/kasa021/watabe-lab-app/internal/handler"
+	"github.com/kasa021/watabe-lab-app/internal/middleware"
+	"github.com/kasa021/watabe-lab-app/internal/repository"
+	"github.com/kasa021/watabe-lab-app/internal/service"
 )
 
 func main() {
@@ -15,16 +20,38 @@ func main() {
 		log.Println("No .env file found, using system environment variables")
 	}
 
-	// Ginのデフォルトエンジンを作成
+	// 設定の読み込み
+	cfg := config.Load()
+	log.Printf("Server starting in %s mode", cfg.Server.Env)
+
+	// データベース接続
+	db, err := database.NewDatabase(cfg)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+
+	// リポジトリの初期化
+	userRepo := repository.NewUserRepository(db)
+
+	// サービスの初期化
+	authService := service.NewAuthService(cfg)
+
+	// ハンドラーの初期化
+	authHandler := handler.NewAuthHandler(authService, userRepo)
+
+	// Ginエンジンの作成
+	if cfg.Server.Env == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	r := gin.Default()
 
 	// CORS設定
-	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://localhost:5173", "http://localhost:3000"}
-	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
-	config.AllowHeaders = []string{"Origin", "Content-Type", "Authorization"}
-	config.AllowCredentials = true
-	r.Use(cors.New(config))
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowOrigins = []string{"http://localhost:5173", "http://localhost:3000"}
+	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
+	corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Authorization"}
+	corsConfig.AllowCredentials = true
+	r.Use(cors.New(corsConfig))
 
 	// ヘルスチェックエンドポイント
 	r.GET("/health", func(c *gin.Context) {
@@ -42,16 +69,31 @@ func main() {
 				"message": "pong",
 			})
 		})
+
+		// 認証エンドポイント（認証不要）
+		auth := api.Group("/auth")
+		{
+			auth.POST("/login", authHandler.Login)
+		}
+
+		// 認証が必要なエンドポイント
+		protected := api.Group("")
+		protected.Use(middleware.AuthMiddleware(authService))
+		{
+			protected.GET("/auth/me", authHandler.Me)
+
+			// 管理者のみアクセス可能なエンドポイント
+			admin := protected.Group("")
+			admin.Use(middleware.RoleMiddleware("admin"))
+			{
+				// TODO: 管理者用エンドポイント
+			}
+		}
 	}
 
 	// サーバー起動
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-
-	log.Printf("Starting server on port %s", port)
-	if err := r.Run(":" + port); err != nil {
+	log.Printf("Starting server on port %s", cfg.Server.Port)
+	if err := r.Run(":" + cfg.Server.Port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
