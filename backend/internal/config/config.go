@@ -37,6 +37,7 @@ type LDAPConfig struct {
 	BaseDN   string
 	BindUser string
 	BindPass string
+	StartTLS bool
 }
 
 // JWTConfig JWT設定
@@ -74,6 +75,7 @@ func Load() *Config {
 			BaseDN:   getEnv("LDAP_BASE_DN", "dc=example,dc=com"),
 			BindUser: getEnv("LDAP_BIND_USER", ""),
 			BindPass: getEnv("LDAP_BIND_PASS", ""),
+			StartTLS: getEnvAsBool("LDAP_START_TLS", true), // デフォルトは有効
 		},
 		JWT: JWTConfig{
 			Secret:     getEnv("JWT_SECRET", "your-secret-key-change-this"),
@@ -109,6 +111,15 @@ func getEnvAsInt(key string, defaultValue int) int {
 func getEnvAsFloat(key string, defaultValue float64) float64 {
 	valueStr := os.Getenv(key)
 	if value, err := strconv.ParseFloat(valueStr, 64); err == nil {
+		return value
+	}
+	return defaultValue
+}
+
+// getEnvAsBool 環境変数を真偽値として取得
+func getEnvAsBool(key string, defaultValue bool) bool {
+	valueStr := os.Getenv(key)
+	if value, err := strconv.ParseBool(valueStr); err == nil {
 		return value
 	}
 	return defaultValue
