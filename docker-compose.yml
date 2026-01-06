@@ -41,7 +41,13 @@ services:
       LAB_LATITUDE: 35.6812
       LAB_LONGITUDE: 139.7671
       LAB_RADIUS_METERS: 100
+      LDAP_HOST: "100.92.170.38"
+      LDAP_PORT: "389"
+      LDAP_BASE_DN: "dc=konara,dc=tailaabe2,dc=ts,dc=net"
+      LDAP_BIND_USER: "cn=admin,dc=konara,dc=tailaabe2,dc=ts,dc=net"
+      LDAP_BIND_PASS: "nakaken2012"
       LDAP_START_TLS: "false"
+      LDAP_SKIP_VERIFY: "true"
     ports:
       - "8080:8080"
     depends_on:
@@ -67,38 +73,6 @@ services:
     networks:
       - lab-network
 
-  # LDAPサーバー (OpenLDAP)
-  openldap:
-    image: osixia/openldap:1.5.0
-    container_name: lab-attendance-openldap
-    environment:
-      LDAP_ORGANISATION: "Watabe Lab"
-      LDAP_DOMAIN: "example.com"
-      LDAP_ADMIN_PASSWORD: "adminpassword"
-      # TLSを無効化（開発環境用）
-      LDAP_TLS: "false"
-    ports:
-      - "389:389"
-      - "636:636"
-    volumes:
-      - ./backend/db/ldap:/container/service/slapd/assets/config/bootstrap/ldif/custom
-    command: --copy-service
-    networks:
-      - lab-network
-
-  # LDAP管理画面 (phpLDAPadmin)
-  phpldapadmin:
-    image: osixia/phpldapadmin:0.9.0
-    container_name: lab-attendance-phpldapadmin
-    environment:
-      PHPLDAPADMIN_LDAP_HOSTS: "openldap"
-      PHPLDAPADMIN_HTTPS: "false"
-    ports:
-      - "8081:80"
-    depends_on:
-      - openldap
-    networks:
-      - lab-network
 
 volumes:
   postgres_data:
