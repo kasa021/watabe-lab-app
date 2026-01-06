@@ -39,6 +39,11 @@ func main() {
 	// ハンドラーの初期化
 	authHandler := handler.NewAuthHandler(authService, userRepo)
 
+	// 出席管理機能の初期化
+	attendanceRepo := repository.NewAttendanceRepository(db)
+	attendanceService := service.NewAttendanceService(attendanceRepo)
+	attendanceHandler := handler.NewAttendanceHandler(attendanceService)
+
 	// Ginエンジンの作成
 	if cfg.Server.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -81,6 +86,13 @@ func main() {
 		protected.Use(middleware.AuthMiddleware(authService))
 		{
 			protected.GET("/auth/me", authHandler.Me)
+
+			// 出席管理エンドポイント
+			attendance := protected.Group("/attendance")
+			{
+				attendance.POST("/checkin", attendanceHandler.CheckIn)
+				attendance.POST("/checkout", attendanceHandler.CheckOut)
+			}
 
 			// 管理者のみアクセス可能なエンドポイント
 			admin := protected.Group("")
