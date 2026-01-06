@@ -32,12 +32,13 @@ type DatabaseConfig struct {
 
 // LDAPConfig LDAP認証設定
 type LDAPConfig struct {
-	Host     string
-	Port     string
-	BaseDN   string
-	BindUser string
-	BindPass string
-	StartTLS bool
+	Host       string
+	Port       string
+	BaseDN     string
+	BindUser   string
+	BindPass   string
+	StartTLS   bool
+	SkipVerify bool
 }
 
 // JWTConfig JWT設定
@@ -70,12 +71,13 @@ func Load() *Config {
 			SSLMode:  getEnv("DB_SSLMODE", "disable"),
 		},
 		LDAP: LDAPConfig{
-			Host:     getEnv("LDAP_HOST", "localhost"),
-			Port:     getEnv("LDAP_PORT", "389"),
-			BaseDN:   getEnv("LDAP_BASE_DN", "dc=example,dc=com"),
-			BindUser: getEnv("LDAP_BIND_USER", ""),
-			BindPass: getEnv("LDAP_BIND_PASS", ""),
-			StartTLS: getEnvAsBool("LDAP_START_TLS", true), // デフォルトは有効
+			Host:       getEnv("LDAP_HOST", "localhost"),
+			Port:       getEnv("LDAP_PORT", "389"),
+			BaseDN:     getEnv("LDAP_BASE_DN", "dc=example,dc=com"),
+			BindUser:   getEnv("LDAP_BIND_USER", ""),
+			BindPass:   getEnv("LDAP_BIND_PASS", ""),
+			StartTLS:   getEnvAsBool("LDAP_START_TLS", true),    // デフォルトは有効
+			SkipVerify: getEnvAsBool("LDAP_SKIP_VERIFY", false), // デフォルトは検証する
 		},
 		JWT: JWTConfig{
 			Secret:     getEnv("JWT_SECRET", "your-secret-key-change-this"),
