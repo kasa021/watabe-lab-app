@@ -1,13 +1,21 @@
 import { useState } from 'react'
+import { authApi } from '../api/auth'
 
 const LoginPage = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: ログイン処理を実装
-    console.log('Login:', { username, password })
+    try {
+      const response = await authApi.login(username, password)
+      localStorage.setItem('token', response.token)
+      localStorage.setItem('user', JSON.stringify(response.user))
+      window.location.href = '/' // ホームへリダイレクト
+    } catch (error) {
+      console.error('Login failed:', error)
+      alert('ログインに失敗しました')
+    }
   }
 
   return (
