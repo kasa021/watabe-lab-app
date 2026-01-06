@@ -10,7 +10,7 @@ type CheckInLog struct {
 	CheckOutAt      *time.Time `json:"check_out_at" gorm:"index"`
 	DurationMinutes *int       `json:"duration_minutes"`
 	CheckInMethod   string     `json:"check_in_method"`
-	WiFiSSID        string     `json:"wifi_ssid"`
+	WiFiSSID        string     `json:"wifi_ssid" gorm:"column:wifi_ssid"`
 	GPSLatitude     *float64   `json:"gps_latitude"`
 	GPSLongitude    *float64   `json:"gps_longitude"`
 	CreatedAt       time.Time  `json:"created_at"`
