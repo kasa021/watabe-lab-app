@@ -1,0 +1,18 @@
+dn: ou=People,dc=example,dc=com
+objectClass: organizationalUnit
+ou: People
+
+dn: uid=student1,ou=People,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: student1
+sn: Student
+givenName: Test
+cn: Test Student
+displayName: Test Student
+uidNumber: 10001
+gidNumber: 10001
+userPassword: password
+homeDirectory: /home/student1
+mail: student1@example.com
