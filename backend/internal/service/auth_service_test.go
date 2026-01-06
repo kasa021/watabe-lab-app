@@ -85,7 +85,6 @@ func TestAuthService_AuthenticateWithLDAP_RealServer(t *testing.T) {
 			BindUser:   getEnv("REAL_LDAP_BIND_USER", ""),
 			BindPass:   getEnv("REAL_LDAP_BIND_PASS", ""),
 			StartTLS:   getEnvAsBool("REAL_LDAP_START_TLS", true),
-			SkipVerify: skipVerify,
 		},
 	}
 

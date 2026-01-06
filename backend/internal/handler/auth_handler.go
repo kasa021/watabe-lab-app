@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -49,6 +50,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	// LDAPで認証
 	ldapUser, err := h.authService.AuthenticateWithLDAP(req.Username, req.Password)
 	if err != nil {
+		log.Printf("LDAP Authentication failed: %v", err)
 		c.JSON(http.StatusUnauthorized, ErrorResponse{
 			Error: ErrorDetail{
 				Code:    "AUTHENTICATION_FAILED",
@@ -148,4 +150,3 @@ type ErrorDetail struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
 }
-
