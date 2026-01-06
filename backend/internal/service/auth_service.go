@@ -80,10 +80,18 @@ func (s *AuthService) connectLDAP() (*ldap.Conn, error) {
 	if s.config.LDAP.Port == "636" {
 		// LDAPS (TLS) 接続
 		tlsConfig := &tls.Config{
-			InsecureSkipVerify: false, // 本番環境ではfalseに設定
+			InsecureSkipVerify: s.config.LDAP.SkipVerify,
 			ServerName:         s.config.LDAP.Host,
+			MinVersion:         tls.VersionTLS10, // 互換性のため
+		}
+		if s.config.LDAP.SkipVerify {
+			// 検証スキップ時はServerNameチェックも緩める（IPアドレス接続対策）
+			tlsConfig.ServerName = ""
 		}
 		l, err = ldap.DialTLS("tcp", ldapURL, tlsConfig)
+		if err != nil {
+			return nil, fmt.Errorf("LDAPS接続エラー: %w", err)
+		}
 	} else {
 		// 通常のLDAP接続
 		l, err = ldap.Dial("tcp", ldapURL)
@@ -93,10 +101,16 @@ func (s *AuthService) connectLDAP() (*ldap.Conn, error) {
 
 		// StartTLSでアップグレード（推奨）
 		if s.config.LDAP.StartTLS {
-			if err := l.StartTLS(&tls.Config{
-				InsecureSkipVerify: false,
+			tlsConfig := &tls.Config{
+				InsecureSkipVerify: s.config.LDAP.SkipVerify,
 				ServerName:         s.config.LDAP.Host,
-			}); err != nil {
+				MinVersion:         tls.VersionTLS10, // 互換性のため
+			}
+			if s.config.LDAP.SkipVerify {
+				tlsConfig.ServerName = ""
+			}
+
+			if err := l.StartTLS(tlsConfig); err != nil {
 				// StartTLSが失敗した場合、接続が閉じられる可能性があるためエラーを返す
 				// 開発環境でStartTLS非対応の場合は、設定でStartTLSを無効化すべき
 				l.Close()
@@ -117,7 +131,9 @@ func (s *AuthService) connectLDAP() (*ldap.Conn, error) {
 	if s.config.LDAP.BindUser != "" {
 		err = l.Bind(s.config.LDAP.BindUser, s.config.LDAP.BindPass)
 		if err != nil {
-			l.Close()
+			if l != nil {
+				l.Close()
+			}
 			return nil, fmt.Errorf("管理者バインド失敗: %w", err)
 		}
 	}
