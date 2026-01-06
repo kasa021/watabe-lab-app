@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../api/client'
+import { AttendanceButton } from '../components/AttendanceButton'
 
 interface HealthResponse {
   status: string
@@ -8,92 +9,71 @@ interface HealthResponse {
 
 const HomePage = () => {
   const [health, setHealth] = useState<HealthResponse | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [user, setUser] = useState<{ display_name: string } | null>(null)
 
   useEffect(() => {
+    // Check login status
+    const token = localStorage.getItem('token')
+    const userStr = localStorage.getItem('user')
+    if (token && userStr) {
+      setIsLoggedIn(true)
+      setUser(JSON.parse(userStr))
+    }
+
     const checkHealth = async () => {
       try {
         const response = await apiClient.get<HealthResponse>('/health')
         setHealth(response.data)
       } catch (error) {
         console.error('Health check failed:', error)
-      } finally {
-        setLoading(false)
       }
     }
-
     checkHealth()
   }, [])
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto text-center">
+        <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl mb-8">
           研究室出席管理システム
         </h1>
 
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            システムステータス
-          </h2>
-          {loading ? (
-            <p className="text-gray-600">確認中...</p>
-          ) : health ? (
-            <div className="space-y-2">
-              <p className="text-green-600 font-medium">
-                ✅ {health.message}
-              </p>
-              <p className="text-gray-600">
-                ステータス: <span className="font-mono">{health.status}</span>
-              </p>
+        {isLoggedIn && user ? (
+          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-2xl mx-auto transform transition-all">
+            <h2 className="text-2xl font-bold text-gray-800 mb-8">
+              ようこそ、{user.display_name} さん
+            </h2>
+            <div className="flex justify-center mb-8">
+              <AttendanceButton />
             </div>
-          ) : (
-            <p className="text-red-600">
-              ❌ バックエンドサーバーに接続できません
+            <p className="text-gray-500 text-sm">
+              ※ ボタンを押して入退室を記録してください
             </p>
-          )}
-        </div>
-
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            機能一覧
-          </h2>
-          <ul className="space-y-3 text-gray-700">
-            <li className="flex items-center">
-              <span className="mr-2">📝</span>
-              <span>チェックイン/チェックアウト機能</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mr-2">👥</span>
-              <span>リアルタイム在室者表示</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mr-2">🏆</span>
-              <span>ランキング機能</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mr-2">🎖️</span>
-              <span>称号システム</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mr-2">📊</span>
-              <span>出席履歴の可視化</span>
-            </li>
-          </ul>
-        </div>
-
-        <div className="mt-8 text-center">
-          <a
-            href="/login"
-            className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors"
-          >
-            ログイン
-          </a>
-        </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl shadow-xl p-8 max-w-lg mx-auto">
+            <p className="text-lg text-gray-600 mb-6">
+              研究室のメンバーはログインして出席を記録してください。
+            </p>
+            {/* System Status - Only show when not logged in or as footer */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-500">
+                  System Status: {health ? <span className="text-green-600 font-bold">Online ✅</span> : <span className="text-red-500">Connecting...</span>}
+                </p>
+            </div>
+            
+            <a
+              href="/login"
+              className="inline-block w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-4 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
+            >
+              ログインして始める
+            </a>
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
 export default HomePage
-
