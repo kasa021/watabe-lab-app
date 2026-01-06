@@ -31,9 +31,9 @@ type LoginRequest struct {
 
 // LoginResponse ログインレスポンス
 type LoginResponse struct {
-	Token        string      `json:"token"`
-	User         domain.User `json:"user"`
-	ExpiresAt    time.Time   `json:"expires_at"`
+	Token     string      `json:"token"`
+	User      domain.User `json:"user"`
+	ExpiresAt time.Time   `json:"expires_at"`
 }
 
 // AuthenticateWithLDAP LDAPでユーザーを認証
@@ -92,17 +92,25 @@ func (s *AuthService) connectLDAP() (*ldap.Conn, error) {
 		}
 
 		// StartTLSでアップグレード（推奨）
-		err = l.StartTLS(&tls.Config{
-			InsecureSkipVerify: false,
-			ServerName:         s.config.LDAP.Host,
-		})
-		// StartTLSが失敗しても続行（開発環境用）
-		// 本番環境ではエラーを返すべき
+		if s.config.LDAP.StartTLS {
+			if err := l.StartTLS(&tls.Config{
+				InsecureSkipVerify: false,
+				ServerName:         s.config.LDAP.Host,
+			}); err != nil {
+				// StartTLSが失敗した場合、接続が閉じられる可能性があるためエラーを返す
+				// 開発環境でStartTLS非対応の場合は、設定でStartTLSを無効化すべき
+				l.Close()
+				return nil, fmt.Errorf("StartTLS error: %w", err)
+			}
+		}
 	}
-
-	if err != nil {
-		return nil, err
-	}
+	// 上記のifブロック内でerr変数をシャドーイングした、あるいはerrを上書きしていない場合、
+	// ここでのerrは Dial の結果(nil)である必要がある。
+	// もとのコードは l.StartTLSの結果を err に代入していたため、ここでチェックされていた。
+	// 修正後は StartTLS のエラーを無視するため、ここでの err チェックは Dial のエラーチェックのみとなるべきだが
+	// 構造上 Dial のエラーチェックは既に line 90 で行われている。
+	// したがって、このブロックでの err チェックは削除するか、意図的に nil であることを確認する。
+	// ここではシンプルに、StartTLSのエラーを親スコープの err に入れないように変更した。
 
 	// 管理者アカウントでバインド（ユーザー検索用）
 	// BindUserが設定されていない場合は匿名バインド
@@ -204,4 +212,3 @@ func (s *AuthService) ValidateJWT(tokenString string) (*jwt.MapClaims, error) {
 
 	return nil, fmt.Errorf("無効なトークン")
 }
-
