@@ -129,6 +129,11 @@ func main() {
 			// ユーザーごとの実績
 			protected.GET("/users/:id/achievements", achievementHandler.GetUserAchievements)
 
+			// ユーザープロフィール・ヒートマップ
+			userHandler := handler.NewUserHandler(userRepo, attendanceRepo)
+			protected.PUT("/users/me", userHandler.UpdateProfile)
+			protected.GET("/users/:id/heatmap", userHandler.GetAttendanceHeatmap)
+
 			// 管理者のみアクセス可能なエンドポイント
 			admin := protected.Group("")
 			admin.Use(middleware.RoleMiddleware("admin"))
