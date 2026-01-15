@@ -12,6 +12,7 @@ import (
 	"github.com/kasa021/watabe-lab-app/internal/middleware"
 	"github.com/kasa021/watabe-lab-app/internal/repository"
 	"github.com/kasa021/watabe-lab-app/internal/service"
+	"github.com/kasa021/watabe-lab-app/internal/ws"
 )
 
 func main() {
@@ -39,9 +40,13 @@ func main() {
 	// ハンドラーの初期化
 	authHandler := handler.NewAuthHandler(authService, userRepo)
 
+	// WebSocket Hubの初期化と起動
+	hub := ws.NewHub()
+	go hub.Run()
+
 	// 出席管理機能の初期化
 	attendanceRepo := repository.NewAttendanceRepository(db)
-	attendanceService := service.NewAttendanceService(attendanceRepo)
+	attendanceService := service.NewAttendanceService(attendanceRepo, hub)
 	attendanceHandler := handler.NewAttendanceHandler(attendanceService)
 
 	// Ginエンジンの作成
@@ -75,6 +80,11 @@ func main() {
 			})
 		})
 
+		// WebSocket エンドポイント
+		api.GET("/ws", func(c *gin.Context) {
+			ws.ServeWs(hub, c)
+		})
+
 		// 認証エンドポイント（認証不要）
 		auth := api.Group("/auth")
 		{
@@ -92,6 +102,7 @@ func main() {
 			{
 				attendance.POST("/checkin", attendanceHandler.CheckIn)
 				attendance.POST("/checkout", attendanceHandler.CheckOut)
+				attendance.GET("/active", attendanceHandler.GetActiveUsers)
 			}
 
 			// 管理者のみアクセス可能なエンドポイント
