@@ -23,12 +23,17 @@ type AttendanceService interface {
 }
 
 type attendanceService struct {
-	repo repository.AttendanceRepository
-	hub  *ws.Hub
+	repo       repository.AttendanceRepository
+	hub        *ws.Hub
+	achService AchievementService
 }
 
-func NewAttendanceService(repo repository.AttendanceRepository, hub *ws.Hub) AttendanceService {
-	return &attendanceService{repo: repo, hub: hub}
+func NewAttendanceService(repo repository.AttendanceRepository, hub *ws.Hub, achService AchievementService) AttendanceService {
+	return &attendanceService{
+		repo:       repo,
+		hub:        hub,
+		achService: achService,
+	}
 }
 
 type CheckInRequest struct {
@@ -96,10 +101,23 @@ func (s *attendanceService) CheckOut(ctx context.Context, userID uint) error {
 		return err
 	}
 
+	// Broadcast check-out event
 	s.hub.BroadcastMessage(map[string]interface{}{
 		"type":    "check_out",
 		"payload": log,
 	})
+
+	// 実績解除判定 (非同期)
+	go func() {
+		bgCtx := context.Background()
+		// 累計回数判定 (とりあえず今回の1回をトリガーに全件チェック)
+		// FIXME: 本来は現在の数値を渡すべきだが、Service内でCountsを取得する実装が必要。
+		// ここでは簡易的に 0 を渡して、Service側で条件と一致するか見る (Service側も実装修正が必要)
+		// 一旦、トリガータイプだけ合わせておく。
+		s.achService.CheckAndUnlock(bgCtx, userID, "check_in_count", nil)
+		s.achService.CheckAndUnlock(bgCtx, userID, "total_duration", nil)
+	}()
+
 	return nil
 }
 
