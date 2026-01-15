@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../api/client'
 import { AttendanceButton } from '../components/AttendanceButton'
+import { ActiveUsersList } from '../components/ActiveUsersList'
+import { useOccupancyStore } from '../stores/useOccupancyStore'
+import { User } from '../types'
 
 interface HealthResponse {
   status: string
@@ -10,7 +13,9 @@ interface HealthResponse {
 const HomePage = () => {
   const [health, setHealth] = useState<HealthResponse | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [user, setUser] = useState<{ display_name: string } | null>(null)
+  const [user, setUser] = useState<User | null>(null)
+
+  const { connect, disconnect } = useOccupancyStore()
 
   useEffect(() => {
     // Check login status
@@ -19,6 +24,8 @@ const HomePage = () => {
     if (token && userStr) {
       setIsLoggedIn(true)
       setUser(JSON.parse(userStr))
+      // Connect to WebSocket when logged in
+      connect()
     }
 
     const checkHealth = async () => {
@@ -30,6 +37,10 @@ const HomePage = () => {
       }
     }
     checkHealth()
+
+    return () => {
+        disconnect()
+    }
   }, [])
 
   return (
@@ -40,16 +51,20 @@ const HomePage = () => {
         </h1>
 
         {isLoggedIn && user ? (
-          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-2xl mx-auto transform transition-all">
-            <h2 className="text-2xl font-bold text-gray-800 mb-8">
-              ようこそ、{user.display_name} さん
-            </h2>
-            <div className="flex justify-center mb-8">
-              <AttendanceButton />
+          <div className="space-y-8">
+            <div className="bg-white rounded-xl shadow-2xl p-8 max-w-2xl mx-auto transform transition-all">
+                <h2 className="text-2xl font-bold text-gray-800 mb-8">
+                ようこそ、{user.display_name} さん
+                </h2>
+                <div className="flex justify-center mb-8">
+                <AttendanceButton userId={user.id} />
+                </div>
+                <p className="text-gray-500 text-sm">
+                ※ ボタンを押して入退室を記録してください
+                </p>
             </div>
-            <p className="text-gray-500 text-sm">
-              ※ ボタンを押して入退室を記録してください
-            </p>
+            
+            <ActiveUsersList />
           </div>
         ) : (
           <div className="bg-white rounded-xl shadow-xl p-8 max-w-lg mx-auto">
