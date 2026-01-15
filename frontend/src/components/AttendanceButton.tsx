@@ -1,26 +1,36 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { attendanceApi } from '../api/attendance'
+import { useOccupancyStore } from '../stores/useOccupancyStore'
 
 interface AttendanceButtonProps {
-  initialIsCheckedIn?: boolean
+  userId?: number
   onStatusChange?: (isCheckedIn: boolean) => void
 }
 
 export const AttendanceButton: React.FC<AttendanceButtonProps> = ({
-  initialIsCheckedIn = false,
+  userId,
   onStatusChange,
 }) => {
-  const [isCheckedIn, setIsCheckedIn] = useState(initialIsCheckedIn)
+  const [isCheckedIn, setIsCheckedIn] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const { activeUsers } = useOccupancyStore()
+
+  // activeUsersの変更を監視して、自分の状態を同期する
+  useEffect(() => {
+    if (userId) {
+      const isUserActive = activeUsers.some(u => u.user_id === userId)
+      setIsCheckedIn(isUserActive)
+    }
+  }, [activeUsers, userId])
 
   const handleCheckIn = async () => {
-
     setIsLoading(true)
     try {
       await attendanceApi.checkIn({
         wifi_ssid: 'WatabeLabWiFi', // TODO: 実際にSSIDを取得するのはブラウザでは難しいので固定か、PWA/Native化が必要
         check_in_method: 'web_manual',
       })
+      // WebSocket経由で更新されるはずだが、念のためローカルも更新
       setIsCheckedIn(true)
       onStatusChange?.(true)
       alert('チェックインしました！')
@@ -39,10 +49,10 @@ export const AttendanceButton: React.FC<AttendanceButtonProps> = ({
   }
 
   const handleCheckOut = async () => {
-
     setIsLoading(true)
     try {
       await attendanceApi.checkOut()
+      // WebSocket経由で更新されるはずだが、念のためローカルも更新
       setIsCheckedIn(false)
       onStatusChange?.(false)
       alert('チェックアウトしました！お疲れ様でした。')
