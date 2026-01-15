@@ -1,9 +1,11 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export const Layout = () => {
   const location = useLocation()
   const navigate = useNavigate()
+  const { t, i18n } = useTranslation()
   const isLoggedIn = !!localStorage.getItem('token')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
@@ -19,6 +21,11 @@ export const Layout = () => {
 
   const closeMenu = () => {
     setIsMenuOpen(false)
+  }
+
+  const changeLanguage = () => {
+    const newLang = i18n.language === 'ja' ? 'en' : 'ja'
+    i18n.changeLanguage(newLang)
   }
 
   if (!isLoggedIn && location.pathname !== '/login') {
@@ -45,7 +52,7 @@ export const Layout = () => {
                         : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                     } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                   >
-                    ホーム
+                    {t('navigation.home')}
                   </Link>
                   <Link
                     to="/ranking"
@@ -55,7 +62,7 @@ export const Layout = () => {
                         : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                     } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                   >
-                    ランキング
+                    {t('navigation.ranking')}
                   </Link>
                   <Link
                     to="/achievements"
@@ -65,7 +72,7 @@ export const Layout = () => {
                         : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                     } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                   >
-                    実績
+                    {t('navigation.achievements')}
                   </Link>
                   <Link
                     to="/profile"
@@ -75,25 +82,31 @@ export const Layout = () => {
                         : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                     } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                   >
-                    プロフィール
+                    {t('navigation.profile')}
                   </Link>
                 </div>
               )}
             </div>
             <div className="hidden sm:flex sm:items-center">
+              <button
+                onClick={changeLanguage}
+                className="mr-4 text-gray-500 hover:text-gray-700 text-sm font-medium focus:outline-none"
+              >
+                 {i18n.language === 'ja' ? 'English' : '日本語'}
+              </button>
               {isLoggedIn ? (
                 <button
                   onClick={handleLogout}
                   className="text-gray-500 hover:text-gray-700 text-sm font-medium"
                 >
-                  ログアウト
+                  {t('navigation.logout')}
                 </button>
               ) : (
                 <Link
                   to="/login"
                   className="text-primary-600 hover:text-primary-700 text-sm font-medium"
                 >
-                  ログイン
+                  {t('navigation.login')}
                 </Link>
               )}
             </div>
@@ -157,7 +170,7 @@ export const Layout = () => {
                     : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
                 } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
               >
-                ホーム
+                {t('navigation.home')}
               </Link>
               <Link
                 to="/ranking"
@@ -168,7 +181,7 @@ export const Layout = () => {
                     : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
                 } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
               >
-                ランキング
+                {t('navigation.ranking')}
               </Link>
               <Link
                 to="/achievements"
@@ -179,7 +192,7 @@ export const Layout = () => {
                     : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
                 } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
               >
-                実績
+                {t('navigation.achievements')}
               </Link>
               <Link
                 to="/profile"
@@ -190,11 +203,20 @@ export const Layout = () => {
                     : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
                 } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
               >
-                プロフィール
+                {t('navigation.profile')}
               </Link>
             </div>
             <div className="pt-4 pb-4 border-t border-gray-200">
                <div className="mt-3 space-y-1">
+                 <button
+                   onClick={() => {
+                     changeLanguage()
+                     closeMenu()
+                   }}
+                   className="block w-full text-left pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700"
+                 >
+                   {i18n.language === 'ja' ? 'English' : '日本語'}
+                 </button>
                 <button
                   onClick={() => {
                       handleLogout()
@@ -202,7 +224,7 @@ export const Layout = () => {
                   }}
                   className="block w-full text-left pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700"
                 >
-                  ログアウト
+                  {t('navigation.logout')}
                 </button>
               </div>
             </div>
