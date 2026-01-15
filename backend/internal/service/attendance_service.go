@@ -7,6 +7,7 @@ import (
 
 	"github.com/kasa021/watabe-lab-app/internal/domain"
 	"github.com/kasa021/watabe-lab-app/internal/repository"
+	"github.com/kasa021/watabe-lab-app/internal/ws"
 	"gorm.io/gorm"
 )
 
@@ -18,14 +19,16 @@ var (
 type AttendanceService interface {
 	CheckIn(ctx context.Context, userID uint, req *CheckInRequest) error
 	CheckOut(ctx context.Context, userID uint) error
+	GetActiveUsers(ctx context.Context) ([]domain.CheckInLog, error)
 }
 
 type attendanceService struct {
 	repo repository.AttendanceRepository
+	hub  *ws.Hub
 }
 
-func NewAttendanceService(repo repository.AttendanceRepository) AttendanceService {
-	return &attendanceService{repo: repo}
+func NewAttendanceService(repo repository.AttendanceRepository, hub *ws.Hub) AttendanceService {
+	return &attendanceService{repo: repo, hub: hub}
 }
 
 type CheckInRequest struct {
@@ -55,7 +58,21 @@ func (s *attendanceService) CheckIn(ctx context.Context, userID uint, req *Check
 		GPSLongitude:  req.GPSLongitude,
 	}
 
-	return s.repo.Create(ctx, log)
+	if err := s.repo.Create(ctx, log); err != nil {
+		return err
+	}
+
+	// ユーザー情報を含めてブロードキャストするために、再度取得（または手動で構築）
+	// ここではシンプルに、作成したログにユーザー情報をセットするためにリロードするか、
+	// あるいは GetActiveCheckIn を呼ぶ。
+	activeLog, err = s.repo.GetActiveCheckIn(ctx, userID)
+	if err == nil {
+		s.hub.BroadcastMessage(map[string]interface{}{
+			"type":    "check_in",
+			"payload": activeLog,
+		})
+	}
+	return nil
 }
 
 func (s *attendanceService) CheckOut(ctx context.Context, userID uint) error {
@@ -75,5 +92,17 @@ func (s *attendanceService) CheckOut(ctx context.Context, userID uint) error {
 	duration := int(now.Sub(log.CheckInAt).Minutes())
 	log.DurationMinutes = &duration
 
-	return s.repo.Update(ctx, log)
+	if err := s.repo.Update(ctx, log); err != nil {
+		return err
+	}
+
+	s.hub.BroadcastMessage(map[string]interface{}{
+		"type":    "check_out",
+		"payload": log,
+	})
+	return nil
+}
+
+func (s *attendanceService) GetActiveUsers(ctx context.Context) ([]domain.CheckInLog, error) {
+	return s.repo.GetAllActiveCheckIns(ctx)
 }
