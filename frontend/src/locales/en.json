@@ -1,0 +1,91 @@
+{
+    "navigation": {
+        "home": "Home",
+        "ranking": "Ranking",
+        "achievements": "Achievements",
+        "profile": "Profile",
+        "logout": "Logout",
+        "login": "Login",
+        "menu_open": "Open menu",
+        "menu_close": "Close menu",
+        "switch_language": "日本語"
+    },
+    "home": {
+        "title": "Lab Attendance System",
+        "welcome": "Welcome, {{name}}",
+        "instruction": "* Please press the button to record your attendance",
+        "guest_message": "Lab members, please login to record attendance.",
+        "system_status": "System Status",
+        "online": "Online ✅",
+        "connecting": "Connecting...",
+        "login_start": "Login to Start"
+    },
+    "login": {
+        "title": "Login",
+        "username": "Username",
+        "username_placeholder": "LDAP Username",
+        "password": "Password",
+        "password_placeholder": "Password",
+        "submit": "Login",
+        "back_home": "Back to Home",
+        "failed": "Login failed"
+    },
+    "ranking": {
+        "title": "🏆 Attendance Ranking",
+        "description": "Ranking of contribution to the lab (stay duration).",
+        "weekly": "Weekly",
+        "monthly": "Monthly",
+        "total": "Total",
+        "loading": "Loading...",
+        "no_data": "No data",
+        "duration": "{{hours}}h {{minutes}}m"
+    },
+    "achievements": {
+        "title": "🏆 Achievements List",
+        "total_points": "Total Points",
+        "loading": "Loading...",
+        "unlocked_at": "Unlocked on {{date}}",
+        "get": "GET!"
+    },
+    "profile": {
+        "title": "Profile Settings",
+        "description": "Manage your activity history and public settings.",
+        "account_settings": "Account Settings",
+        "username": "Username",
+        "display_name": "Display Name",
+        "display_name_hint": "This name will be displayed in rankings and lists.",
+        "public_presence": "Share Presence Status",
+        "public_presence_hint": "If turned off, you will not appear in 'Active Users'.",
+        "save": "Save Settings",
+        "saving": "Saving...",
+        "success": "Profile updated",
+        "error": "Update failed",
+        "heatmap": "Attendance Heatmap",
+        "days_last_year": "Attendance Days (Last Year)",
+        "duration_last_year": "Total Stay Duration (Last Year)",
+        "days_unit": "{{count}} days",
+        "hours_unit": "{{count}} hours",
+        "fewer": "Less",
+        "more": "More",
+        "tooltip": "{{date}}: {{duration}}min ({{count}} times)"
+    },
+    "attendance": {
+        "enter": "Check In",
+        "exit": "Check Out",
+        "current_status_in": "Status: Checked In",
+        "current_status_out": "Status: Checked Out",
+        "processing": "Processing...",
+        "checkin_success": "Checked in successfully!",
+        "already_checked_in": "Already checked in. Status updated.",
+        "checkin_failed": "Check-in failed",
+        "checkout_success": "Checked out successfully! Good job.",
+        "checkout_failed": "Check-out failed"
+    },
+    "active_users": {
+        "title": "Room Status",
+        "live": "LIVE",
+        "offline": "OFFLINE",
+        "unknown": "Unknown",
+        "empty": "No one is currently in the lab."
+    }
+}
