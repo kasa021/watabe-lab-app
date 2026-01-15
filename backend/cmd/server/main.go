@@ -44,9 +44,14 @@ func main() {
 	hub := ws.NewHub()
 	go hub.Run()
 
+	// 実績管理機能の初期化
+	achievementRepo := repository.NewAchievementRepository(db)
+	achievementService := service.NewAchievementService(achievementRepo, userRepo)
+	achievementHandler := handler.NewAchievementHandler(achievementService)
+
 	// 出席管理機能の初期化
 	attendanceRepo := repository.NewAttendanceRepository(db)
-	attendanceService := service.NewAttendanceService(attendanceRepo, hub)
+	attendanceService := service.NewAttendanceService(attendanceRepo, hub, achievementService)
 	attendanceHandler := handler.NewAttendanceHandler(attendanceService)
 
 	// ランキング機能の初期化
@@ -114,6 +119,15 @@ func main() {
 			{
 				rankings.GET("", rankingHandler.GetRankings)
 			}
+
+			// 実績エンドポイント
+			achievements := protected.Group("/achievements")
+			{
+				achievements.GET("", achievementHandler.GetAchievements)
+				achievements.GET("/my", achievementHandler.GetMyAchievements)
+			}
+			// ユーザーごとの実績
+			protected.GET("/users/:id/achievements", achievementHandler.GetUserAchievements)
 
 			// 管理者のみアクセス可能なエンドポイント
 			admin := protected.Group("")
