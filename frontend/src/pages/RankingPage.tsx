@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { rankingApi, UserRanking } from '../api/ranking'
 
 const RankingPage = () => {
+  const { t } = useTranslation()
   const [rankings, setRankings] = useState<UserRanking[]>([])
   const [loading, setLoading] = useState(false)
   const [period, setPeriod] = useState<'weekly' | 'monthly' | 'total'>('weekly')
@@ -24,7 +26,7 @@ const RankingPage = () => {
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60)
     const mins = minutes % 60
-    return `${hours}時間${mins}分`
+    return t('ranking.duration', { hours, minutes: mins })
   }
 
   const getMedalColor = (index: number) => {
@@ -43,8 +45,8 @@ const RankingPage = () => {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">🏆 出席ランキング</h1>
-        <p className="text-gray-500">研究室への貢献度（滞在時間）をランキング形式で表示します</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('ranking.title')}</h1>
+        <p className="text-gray-500">{t('ranking.description')}</p>
       </div>
 
       {/* Period Selector */}
@@ -62,9 +64,9 @@ const RankingPage = () => {
               }
             `}
           >
-            {p === 'weekly' && '週間'}
-            {p === 'monthly' && '月間'}
-            {p === 'total' && '累計'}
+            {p === 'weekly' && t('ranking.weekly')}
+            {p === 'monthly' && t('ranking.monthly')}
+            {p === 'total' && t('ranking.total')}
           </button>
         ))}
       </div>
@@ -74,7 +76,7 @@ const RankingPage = () => {
         {loading ? (
             <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-                <p className="mt-4 text-gray-500">読み込み中...</p>
+                <p className="mt-4 text-gray-500">{t('ranking.loading')}</p>
             </div>
         ) : rankings.length > 0 ? (
           rankings.map((user, index) => (
@@ -103,7 +105,7 @@ const RankingPage = () => {
           ))
         ) : (
           <div className="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
-            <p className="text-gray-500">データがありません</p>
+            <p className="text-gray-500">{t('ranking.no_data')}</p>
           </div>
         )}
       </div>
