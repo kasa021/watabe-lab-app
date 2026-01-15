@@ -49,6 +49,10 @@ func main() {
 	attendanceService := service.NewAttendanceService(attendanceRepo, hub)
 	attendanceHandler := handler.NewAttendanceHandler(attendanceService)
 
+	// ランキング機能の初期化
+	rankingService := service.NewRankingService(attendanceRepo)
+	rankingHandler := handler.NewRankingHandler(rankingService)
+
 	// Ginエンジンの作成
 	if cfg.Server.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -103,6 +107,12 @@ func main() {
 				attendance.POST("/checkin", attendanceHandler.CheckIn)
 				attendance.POST("/checkout", attendanceHandler.CheckOut)
 				attendance.GET("/active", attendanceHandler.GetActiveUsers)
+			}
+
+			// ランキングエンドポイント
+			rankings := protected.Group("/rankings")
+			{
+				rankings.GET("", rankingHandler.GetRankings)
 			}
 
 			// 管理者のみアクセス可能なエンドポイント
