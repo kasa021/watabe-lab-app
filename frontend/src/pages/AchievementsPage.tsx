@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { achievementApi, Achievement, UserAchievement } from '../api/achievement'
 
 const AchievementsPage = () => {
+  const { t } = useTranslation()
   const [achievements, setAchievements] = useState<Achievement[]>([])
   const [myAchievements, setMyAchievements] = useState<UserAchievement[]>([])
   const [loading, setLoading] = useState(false)
@@ -42,16 +44,16 @@ const AchievementsPage = () => {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">🏆 実績リスト</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('achievements.title')}</h1>
         <p className="text-gray-500">
-          合計獲得ポイント: <span className="text-2xl font-bold text-primary-600">{totalPoints} pt</span>
+          {t('achievements.total_points')}: <span className="text-2xl font-bold text-primary-600">{totalPoints} pt</span>
         </p>
       </div>
 
       {loading ? (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-4 text-gray-500">読み込み中...</p>
+          <p className="mt-4 text-gray-500">{t('achievements.loading')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -71,7 +73,7 @@ const AchievementsPage = () => {
               >
                 {achieved && (
                   <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-yellow-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                    GET!
+                    {t('achievements.get')}
                   </div>
                 )}
                 
@@ -95,7 +97,7 @@ const AchievementsPage = () => {
                         </span>
                         {achieved && (
                             <span className="text-green-600 font-medium">
-                                {getAchievedDate(ach.id)} 解除
+                                {t('achievements.unlocked_at', { date: getAchievedDate(ach.id) })}
                             </span>
                         )}
                     </div>

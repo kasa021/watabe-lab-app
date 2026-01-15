@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { attendanceApi } from '../api/attendance'
 import { useOccupancyStore } from '../stores/useOccupancyStore'
 
@@ -11,6 +12,7 @@ export const AttendanceButton: React.FC<AttendanceButtonProps> = ({
   userId,
   onStatusChange,
 }) => {
+  const { t } = useTranslation()
   const [isCheckedIn, setIsCheckedIn] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const { activeUsers } = useOccupancyStore()
@@ -33,15 +35,15 @@ export const AttendanceButton: React.FC<AttendanceButtonProps> = ({
       // WebSocket経由で更新されるはずだが、念のためローカルも更新
       setIsCheckedIn(true)
       onStatusChange?.(true)
-      alert('チェックインしました！')
+      alert(t('attendance.checkin_success'))
     } catch (error: any) {
       if (error.response?.status === 409) {
         setIsCheckedIn(true)
         onStatusChange?.(true)
-        alert('既にチェックイン済みです。ステータスを更新しました。')
+        alert(t('attendance.already_checked_in'))
       } else {
         console.error('Check-in failed:', error)
-        alert('チェックインに失敗しました')
+        alert(t('attendance.checkin_failed'))
       }
     } finally {
       setIsLoading(false)
@@ -55,10 +57,10 @@ export const AttendanceButton: React.FC<AttendanceButtonProps> = ({
       // WebSocket経由で更新されるはずだが、念のためローカルも更新
       setIsCheckedIn(false)
       onStatusChange?.(false)
-      alert('チェックアウトしました！お疲れ様でした。')
+      alert(t('attendance.checkout_success'))
     } catch (error) {
       console.error('Check-out failed:', error)
-      alert('チェックアウトに失敗しました')
+      alert(t('attendance.checkout_failed'))
     } finally {
       setIsLoading(false)
     }
@@ -80,16 +82,16 @@ export const AttendanceButton: React.FC<AttendanceButtonProps> = ({
       `}
     >
       {isLoading ? (
-        '処理中...'
+        t('attendance.processing')
       ) : isCheckedIn ? (
         <div className="flex flex-col items-center">
-          <span>退室する</span>
-          <span className="text-sm font-normal mt-2">現在: 在室中</span>
+          <span>{t('attendance.exit')}</span>
+          <span className="text-sm font-normal mt-2">{t('attendance.current_status_in')}</span>
         </div>
       ) : (
         <div className="flex flex-col items-center">
-          <span>入室する</span>
-          <span className="text-sm font-normal mt-2">現在: 退室中</span>
+          <span>{t('attendance.enter')}</span>
+          <span className="text-sm font-normal mt-2">{t('attendance.current_status_out')}</span>
         </div>
       )}
     </button>
