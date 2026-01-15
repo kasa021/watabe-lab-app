@@ -61,3 +61,12 @@ func (h *AttendanceHandler) CheckOut(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "checked out successfully"})
 }
+
+func (h *AttendanceHandler) GetActiveUsers(c *gin.Context) {
+	logs, err := h.service.GetActiveUsers(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"active_users": logs})
+}
