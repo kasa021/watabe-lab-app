@@ -95,9 +95,21 @@ func (h *UserHandler) GetAttendanceHeatmap(c *gin.Context) {
 		return
 	}
 
-	// フロントエンドは react-calendar-heatmap を使う想定
-	// { date: '2023-01-01', count: 123 } の形式が望ましい
-	// domain.DailyAttendance は { Date, Count, DurationMinutes } を持っている
+	// フロントエンドの形式に合わせて変換
+	type HeatmapResponse struct {
+		Date     string `json:"date"`
+		Count    int    `json:"count"`
+		Duration int    `json:"duration"`
+	}
 
-	c.JSON(http.StatusOK, gin.H{"heatmap": dailies})
+	var response []HeatmapResponse
+	for _, d := range dailies {
+		response = append(response, HeatmapResponse{
+			Date:     d.AttendanceDate.Format("2006-01-02"),
+			Count:    d.CheckInCount,
+			Duration: d.TotalDurationMinutes,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"heatmap": response})
 }
