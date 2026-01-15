@@ -1,12 +1,5 @@
 import { apiClient } from './client'
-
-export interface User {
-  id: number
-  username: string
-  display_name: string
-  role: string
-  is_active: boolean
-}
+import { User } from '../types'
 
 export interface LoginResponse {
   token: string
@@ -22,9 +15,9 @@ export const authApi = {
     })
     return response.data
   },
-  
-  getMe: async (): Promise<{ user: User }> => {
-    const response = await apiClient.get<{ user: User }>('/api/v1/auth/me')
+
+  getMe: async (): Promise<User> => {
+    const response = await apiClient.get<User>('/api/v1/auth/me')
     return response.data
   },
 }
