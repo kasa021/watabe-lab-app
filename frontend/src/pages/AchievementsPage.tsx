@@ -1,6 +1,18 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { achievementApi, Achievement, UserAchievement } from '../api/achievement'
+import { 
+  Medal, 
+  Lock, 
+  Clock, 
+  Calendar, 
+  Sunrise, 
+  Moon, 
+  Trophy, 
+  Flame,
+  CalendarCheck,
+  LucideIcon
+} from 'lucide-react'
 
 const AchievementsPage = () => {
   const { t } = useTranslation()
@@ -39,6 +51,27 @@ const AchievementsPage = () => {
     return null
   }
 
+  const getAchievementIcon = (achievement: Achievement): LucideIcon => {
+    const { code, category } = achievement
+    
+    // Specific implementation based on achievement code
+    if (code.includes('early_bird')) return Sunrise
+    if (code.includes('night_owl')) return Moon
+    if (code.includes('streak')) return Flame
+    
+    // Category based implementation
+    switch (category) {
+      case 'time':
+        return Clock
+      case 'attendance':
+        return CalendarCheck
+      case 'special':
+        return Trophy
+      default:
+        return Medal
+    }
+  }
+
   const totalPoints = myAchievements.reduce((sum, ua) => sum + ua.achievement.points_reward, 0)
 
   return (
@@ -59,6 +92,8 @@ const AchievementsPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {achievements.map((ach) => {
             const achieved = isAchieved(ach.id)
+            const IconComponent = getAchievementIcon(ach)
+            
             return (
               <div
                 key={ach.id}
@@ -79,10 +114,14 @@ const AchievementsPage = () => {
                 
                 <div className="flex items-start space-x-4">
                   <div className={`
-                    w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center text-2xl
-                    ${achieved ? 'bg-yellow-100' : 'bg-gray-200'}
+                    w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center
+                    ${achieved ? 'bg-gradient-to-br from-yellow-100 to-orange-100 text-yellow-600' : 'bg-gray-200 text-gray-400'}
                   `}>
-                    {achieved ? '🥇' : '🔒'}
+                    {achieved ? (
+                      <IconComponent size={28} strokeWidth={1.5} />
+                    ) : (
+                      <Lock size={24} />
+                    )}
                   </div>
                   <div>
                     <h3 className={`font-bold text-lg ${achieved ? 'text-gray-900' : 'text-gray-500'}`}>
