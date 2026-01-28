@@ -50,8 +50,10 @@ func main() {
 	achievementHandler := handler.NewAchievementHandler(achievementService)
 
 	// 出席管理機能の初期化
+	// 出席管理機能の初期化
 	attendanceRepo := repository.NewAttendanceRepository(db)
-	attendanceService := service.NewAttendanceService(attendanceRepo, hub, achievementService)
+	settingsRepo := repository.NewSettingsRepository(db)                                                     // Added
+	attendanceService := service.NewAttendanceService(attendanceRepo, settingsRepo, hub, achievementService) // Updated
 	attendanceHandler := handler.NewAttendanceHandler(attendanceService)
 
 	// ランキング機能の初期化

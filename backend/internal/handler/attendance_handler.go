@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kasa021/watabe-lab-app/internal/service"
@@ -30,9 +31,19 @@ func (h *AttendanceHandler) CheckIn(c *gin.Context) {
 		return
 	}
 
+	// Set Client IP
+	req.ClientIP = c.ClientIP()
+
 	if err := h.service.CheckIn(c.Request.Context(), userID.(uint), &req); err != nil {
 		if errors.Is(err, service.ErrAlreadyCheckedIn) {
 			c.JSON(http.StatusConflict, gin.H{"error": "already checked in"})
+			return
+		}
+		if errors.Is(err, service.ErrRestrictionViolation) {
+			// Clean up message for frontend display by removing the technical suffix
+			// fmt.Errorf("msg: %w", err) produces "msg: error_string"
+			msg := strings.TrimSuffix(err.Error(), ": "+service.ErrRestrictionViolation.Error())
+			c.JSON(http.StatusForbidden, gin.H{"error": msg})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

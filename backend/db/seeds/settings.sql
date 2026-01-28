@@ -11,12 +11,14 @@ VALUES (
         '休日リスト（2025年の祝日）'
     ),
     (
-        'wifi_ssid_whitelist',
-        '["WatabeLabWiFi", "UnivWiFi", "LabNetwork"]',
-        'チェックイン可能なWiFi SSID'
+        'allowed_ip_range',
+        '{"ips": ["133.38.201.125", "172.19.0.1"]}',
+        '許可されたIP範囲'
     ),
     (
         'gps_location',
-        '{"latitude": 35.6812, "longitude": 139.7671, "radius_meters": 100}',
+        '{"latitude": 35.862934, "longitude": 139.607886, "radius_meters": 200}',
         '研究室の位置情報と許容範囲'
-    );
+    )
+ON CONFLICT (key) DO UPDATE 
+SET value = EXCLUDED.value, description = EXCLUDED.description;
