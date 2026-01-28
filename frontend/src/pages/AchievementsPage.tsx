@@ -5,7 +5,6 @@ import {
   Medal, 
   Lock, 
   Clock, 
-  Calendar, 
   Sunrise, 
   Moon, 
   Trophy, 
