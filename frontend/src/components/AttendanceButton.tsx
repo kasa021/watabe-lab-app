@@ -25,29 +25,53 @@ export const AttendanceButton: React.FC<AttendanceButtonProps> = ({
     }
   }, [activeUsers, userId])
 
-  const handleCheckIn = async () => {
+  const handleCheckIn = () => {
     setIsLoading(true)
-    try {
-      await attendanceApi.checkIn({
-        wifi_ssid: 'WatabeLabWiFi', // TODO: 実際にSSIDを取得するのはブラウザでは難しいので固定か、PWA/Native化が必要
-        check_in_method: 'web_manual',
-      })
-      // WebSocket経由で更新されるはずだが、念のためローカルも更新
-      setIsCheckedIn(true)
-      onStatusChange?.(true)
-      alert(t('attendance.checkin_success'))
-    } catch (error: any) {
-      if (error.response?.status === 409) {
-        setIsCheckedIn(true)
-        onStatusChange?.(true)
-        alert(t('attendance.already_checked_in'))
-      } else {
-        console.error('Check-in failed:', error)
-        alert(t('attendance.checkin_failed'))
-      }
-    } finally {
+
+    if (!navigator.geolocation) {
+      alert("お使いのブラウザは位置情報をサポートしていません")
       setIsLoading(false)
+      return
     }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          await attendanceApi.checkIn({
+            wifi_ssid: 'WatabeLabWiFi',
+            check_in_method: 'web_manual',
+            gps_latitude: position.coords.latitude,
+            gps_longitude: position.coords.longitude,
+          })
+          
+          setIsCheckedIn(true)
+          onStatusChange?.(true)
+          alert(t('attendance.checkin_success'))
+        } catch (error: any) {
+          if (error.response?.status === 409) {
+            setIsCheckedIn(true)
+            onStatusChange?.(true)
+            alert(t('attendance.already_checked_in'))
+          } else if (error.response?.status === 403) {
+            // Restriction violation (IP or GPS)
+            console.log('403 Forbidden caught', error.response.data)
+            const message = error.response?.data?.error || "アクセスが拒否されました"
+            alert(message)
+          } else {
+            console.error('Check-in failed:', error)
+            const message = error.response?.data?.error || t('attendance.checkin_failed')
+            alert(message)
+          }
+        } finally {
+          setIsLoading(false)
+        }
+      },
+      (error) => {
+        console.error('Geolocation error:', error)
+        alert("位置情報の取得に失敗しました。位置情報の利用を許可してください。")
+        setIsLoading(false)
+      }
+    )
   }
 
   const handleCheckOut = async () => {
