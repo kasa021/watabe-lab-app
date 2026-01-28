@@ -48,6 +48,7 @@ services:
       LDAP_BIND_PASS: "nakaken2012"
       LDAP_START_TLS: "false"
       LDAP_SKIP_VERIFY: "true"
+      ALLOWED_ORIGINS: "http://localhost,http://localhost:3000,http://localhost:5173"
     ports:
       - "8080:8080"
     depends_on:
@@ -58,6 +59,21 @@ services:
     networks:
       - lab-network
     restart: unless-stopped
+
+  # フロントエンド (Nginx + React)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lab-attendance-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_started
+    networks:
+      - lab-network
+    restart: always
 
   # マイグレーション実行用（プロファイル指定で実行）
   migrate:
