@@ -69,12 +69,12 @@ const ProfilePage = () => {
       return {
         'data-tooltip-id': 'heatmap-tooltip',
         'data-tooltip-content': 'No data'
-      }
+      } as any
     }
     return {
       'data-tooltip-id': 'heatmap-tooltip',
       'data-tooltip-content': t('profile.tooltip', { date: value.date, duration: value.duration, count: value.count }),
-    }
+    } as any
   }
 
   const classForValue = (value: any) => {
