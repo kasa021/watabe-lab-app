@@ -70,15 +70,6 @@ cp .env.example .env
 
 ### 3. バックエンドの起動
 
-#### 推奨: セットアップスクリプトの使用
-
-```bash
-cd backend
-chmod +x scripts/setup.sh
-./scripts/setup.sh
-```
-
-#### 手動セットアップの場合
 
 ```bash
 cd backend
