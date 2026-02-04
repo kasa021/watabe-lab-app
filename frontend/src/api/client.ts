@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // APIクライアントの作成
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? '',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -33,7 +33,7 @@ apiClient.interceptors.response.use(
     // 401エラーの場合はログアウト処理
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
-      window.location.href = '/login'
+      window.location.href = '/attendance/login'
     }
     return Promise.reject(error)
   }

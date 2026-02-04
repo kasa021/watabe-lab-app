@@ -80,17 +80,17 @@ func main() {
 	corsConfig.AllowCredentials = true
 	r.Use(cors.New(corsConfig))
 
-	// ヘルスチェックエンドポイント
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"status":  "ok",
-			"message": "Lab Attendance System is running",
-		})
-	})
-
 	// APIルーティング
 	api := r.Group("/api/v1")
 	{
+		// ヘルスチェックエンドポイント
+		api.GET("/health", func(c *gin.Context) {
+			c.JSON(200, gin.H{
+				"status":  "ok",
+				"message": "Lab Attendance System is running",
+			})
+		})
+
 		api.GET("/ping", func(c *gin.Context) {
 			c.JSON(200, gin.H{
 				"message": "pong",

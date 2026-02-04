@@ -13,7 +13,7 @@ const LoginPage = () => {
       const response = await authApi.login(username, password)
       localStorage.setItem('token', response.token)
       localStorage.setItem('user', JSON.stringify(response.user))
-      window.location.href = '/' // ホームへリダイレクト
+      window.location.href = '/attendance/' // ホームへリダイレクト
     } catch (error) {
       console.error('Login failed:', error)
       alert(t('login.failed'))
@@ -73,7 +73,7 @@ const LoginPage = () => {
         </form>
 
         <div className="mt-6 text-center">
-          <a href="/" className="text-primary-600 hover:text-primary-700">
+          <a href="/attendance/" className="text-primary-600 hover:text-primary-700">
             ← {t('login.back_home')}
           </a>
         </div>

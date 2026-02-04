@@ -32,7 +32,7 @@ const HomePage = () => {
 
     const checkHealth = async () => {
       try {
-        const response = await apiClient.get<HealthResponse>('/health')
+        const response = await apiClient.get<HealthResponse>('/api/v1/health')
         setHealth(response.data)
       } catch (error) {
         console.error('Health check failed:', error)
@@ -81,7 +81,7 @@ const HomePage = () => {
             </div>
             
             <a
-              href="/login"
+              href="/attendance/login"
               className="inline-block w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-4 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
             >
               {t('home.login_start')}

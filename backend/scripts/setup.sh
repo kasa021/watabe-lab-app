@@ -69,7 +69,7 @@ docker-compose ps
 echo ""
 echo "🌐 アクセス先:"
 echo "   - API: http://localhost:8080"
-echo "   - Health Check: http://localhost:8080/health"
+echo "   - Health Check: http://localhost:8080/api/v1/health"
 echo ""
 echo "📝 次のステップ:"
 echo "   1. .envファイルを編集して適切な設定値を入力"

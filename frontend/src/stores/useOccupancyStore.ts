@@ -30,8 +30,9 @@ export const useOccupancyStore = create<OccupancyState>((set, get) => {
     connect: () => {
       if (socket) return
 
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
-      const wsUrl = baseUrl.replace(/^http/, 'ws') + '/api/v1/ws'
+
+      const apiBase = import.meta.env.VITE_API_BASE_URL || ''
+      const wsUrl = window.location.origin.replace(/^http/, 'ws') + apiBase + '/api/v1/ws'
 
       console.log('Connecting to WebSocket:', wsUrl)
       socket = new WebSocket(wsUrl)
