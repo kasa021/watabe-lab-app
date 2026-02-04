@@ -13,7 +13,7 @@ const ProfilePage = () => {
   const [heatmapData, setHeatmapData] = useState<HeatmapData[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  
+
   // Form state
   const [displayName, setDisplayName] = useState('')
   const [isPresencePublic, setIsPresencePublic] = useState(true)
@@ -27,7 +27,7 @@ const ProfilePage = () => {
         setUser(user)
         setDisplayName(user.display_name)
         setIsPresencePublic(user.is_presence_public)
-        
+
         // Fetch heatmap data
         const data = await userApi.getHeatmap('me')
         setHeatmapData(data)
@@ -44,7 +44,7 @@ const ProfilePage = () => {
     e.preventDefault()
     setSaving(true)
     setMessage(null)
-    
+
     try {
       const req: UpdateProfileRequest = {
         display_name: displayName,
@@ -56,8 +56,8 @@ const ProfilePage = () => {
       localStorage.setItem('user', JSON.stringify(updatedUser))
       setMessage({ text: t('profile.success'), type: 'success' })
     } catch (error) {
-       console.error(error)
-       setMessage({ text: t('profile.error'), type: 'error' })
+      console.error(error)
+      setMessage({ text: t('profile.error'), type: 'error' })
     } finally {
       setSaving(false)
     }
@@ -66,7 +66,10 @@ const ProfilePage = () => {
   // Heatmap helper
   const getTooltipDataAttrs = (value: any) => {
     if (!value || !value.date) {
-      return { 'data-tooltip-content': 'No data' }
+      return {
+        'data-tooltip-id': 'heatmap-tooltip',
+        'data-tooltip-content': 'No data'
+      }
     }
     return {
       'data-tooltip-id': 'heatmap-tooltip',
@@ -108,109 +111,109 @@ const ProfilePage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Profile Settings Card */}
         <div className="lg:col-span-1">
-            <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">{t('profile.account_settings')}</h2>
-                
-                <form onSubmit={handleUpdateProfile} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">{t('profile.username')}</label>
-                        <input 
-                            type="text" 
-                            value={user?.username || ''} 
-                            disabled 
-                            className="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm sm:text-sm text-gray-500"
-                        />
-                    </div>
-                    
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">{t('profile.display_name')}</label>
-                        <input 
-                            type="text" 
-                            value={displayName} 
-                            onChange={(e) => setDisplayName(e.target.value)}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                        />
-                         <p className="text-xs text-gray-500 mt-1">{t('profile.display_name_hint')}</p>
-                    </div>
+          <div className="bg-white shadow rounded-lg p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">{t('profile.account_settings')}</h2>
 
-                    <div className="flex items-start">
-                        <div className="flex items-center h-5">
-                            <input
-                                id="is_public"
-                                name="is_public"
-                                type="checkbox"
-                                checked={isPresencePublic}
-                                onChange={(e) => setIsPresencePublic(e.target.checked)}
-                                className="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300 rounded"
-                            />
-                        </div>
-                        <div className="ml-3 text-sm">
-                            <label htmlFor="is_public" className="font-medium text-gray-700">{t('profile.public_presence')}</label>
-                            <p className="text-gray-500">{t('profile.public_presence_hint')}</p>
-                        </div>
-                    </div>
+            <form onSubmit={handleUpdateProfile} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">{t('profile.username')}</label>
+                <input
+                  type="text"
+                  value={user?.username || ''}
+                  disabled
+                  className="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm sm:text-sm text-gray-500"
+                />
+              </div>
 
-                    {message && (
-                        <div className={`p-3 rounded-md text-sm ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                            {message.text}
-                        </div>
-                    )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">{t('profile.display_name')}</label>
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                />
+                <p className="text-xs text-gray-500 mt-1">{t('profile.display_name_hint')}</p>
+              </div>
 
-                    <button
-                        type="submit"
-                        disabled={saving}
-                        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
-                    >
-                        {saving ? t('profile.saving') : t('profile.save')}
-                    </button>
-                </form>
-            </div>
+              <div className="flex items-start">
+                <div className="flex items-center h-5">
+                  <input
+                    id="is_public"
+                    name="is_public"
+                    type="checkbox"
+                    checked={isPresencePublic}
+                    onChange={(e) => setIsPresencePublic(e.target.checked)}
+                    className="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300 rounded"
+                  />
+                </div>
+                <div className="ml-3 text-sm">
+                  <label htmlFor="is_public" className="font-medium text-gray-700">{t('profile.public_presence')}</label>
+                  <p className="text-gray-500">{t('profile.public_presence_hint')}</p>
+                </div>
+              </div>
+
+              {message && (
+                <div className={`p-3 rounded-md text-sm ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                  {message.text}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={saving}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+              >
+                {saving ? t('profile.saving') : t('profile.save')}
+              </button>
+            </form>
+          </div>
         </div>
 
         {/* Heatmap & Stats */}
         <div className="lg:col-span-2 space-y-8">
-            {/* Heatmap */}
-            <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">{t('profile.heatmap')}</h2>
-                <div className="w-full overflow-x-auto">
-                    <div className="min-w-[600px]">
-                        <CalendarHeatmap
-                            startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}
-                            endDate={new Date()}
-                            values={heatmapData}
-                            classForValue={classForValue}
-                            tooltipDataAttrs={getTooltipDataAttrs}
-                            showWeekdayLabels={true}
-                        />
-                        <Tooltip id="heatmap-tooltip" />
-                    </div>
-                </div>
-                <div className="mt-4 flex items-center justify-end text-sm text-gray-500 space-x-2">
-                    <span>{t('profile.fewer')}</span>
-                    <div className="flex space-x-1">
-                        <div className="w-3 h-3 bg-gray-100 rounded-sm"></div>
-                        <div className="w-3 h-3 bg-green-200 rounded-sm"></div>
-                        <div className="w-3 h-3 bg-green-400 rounded-sm"></div>
-                        <div className="w-3 h-3 bg-green-600 rounded-sm"></div>
-                        <div className="w-3 h-3 bg-green-800 rounded-sm"></div>
-                    </div>
-                    <span>{t('profile.more')}</span>
-                </div>
+          {/* Heatmap */}
+          <div className="bg-white shadow rounded-lg p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">{t('profile.heatmap')}</h2>
+            <div className="w-full overflow-x-auto">
+              <div className="min-w-[600px]">
+                <CalendarHeatmap
+                  startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}
+                  endDate={new Date()}
+                  values={heatmapData}
+                  classForValue={classForValue}
+                  tooltipDataAttrs={getTooltipDataAttrs}
+                  showWeekdayLabels={true}
+                />
+                <Tooltip id="heatmap-tooltip" />
+              </div>
             </div>
-            
-            {/* Stats (Placeholder or simple calc) */}
-             <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white shadow rounded-lg p-6 text-center">
-                    <p className="text-sm font-medium text-gray-500">{t('profile.days_last_year')}</p>
-                    <p className="text-3xl font-bold text-primary-600 mt-2">{t('profile.days_unit', { count: heatmapData.length })}</p>
-                </div>
-                <div className="bg-white shadow rounded-lg p-6 text-center">
-                    <p className="text-sm font-medium text-gray-500">{t('profile.duration_last_year')}</p>
-                    <p className="text-3xl font-bold text-primary-600 mt-2">
-                        {t('profile.hours_unit', { count: Math.round(heatmapData.reduce((acc, curr) => acc + curr.duration, 0) / 60) })}
-                    </p>
-                </div>
+            <div className="mt-4 flex items-center justify-end text-sm text-gray-500 space-x-2">
+              <span>{t('profile.fewer')}</span>
+              <div className="flex space-x-1">
+                <div className="w-3 h-3 bg-gray-100 rounded-sm"></div>
+                <div className="w-3 h-3 bg-green-200 rounded-sm"></div>
+                <div className="w-3 h-3 bg-green-400 rounded-sm"></div>
+                <div className="w-3 h-3 bg-green-600 rounded-sm"></div>
+                <div className="w-3 h-3 bg-green-800 rounded-sm"></div>
+              </div>
+              <span>{t('profile.more')}</span>
             </div>
+          </div>
+
+          {/* Stats (Placeholder or simple calc) */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white shadow rounded-lg p-6 text-center">
+              <p className="text-sm font-medium text-gray-500">{t('profile.days_last_year')}</p>
+              <p className="text-3xl font-bold text-primary-600 mt-2">{t('profile.days_unit', { count: heatmapData.length })}</p>
+            </div>
+            <div className="bg-white shadow rounded-lg p-6 text-center">
+              <p className="text-sm font-medium text-gray-500">{t('profile.duration_last_year')}</p>
+              <p className="text-3xl font-bold text-primary-600 mt-2">
+                {t('profile.hours_unit', { count: Math.round(heatmapData.reduce((acc, curr) => acc + curr.duration, 0) / 60) })}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

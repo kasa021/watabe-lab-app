@@ -6,21 +6,20 @@ services:
     image: postgres:15-alpine
     container_name: lab-attendance-db
     environment:
-      POSTGRES_USER: labuser
-      POSTGRES_PASSWORD: labpass
-      POSTGRES_DB: lab_attendance
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
       TZ: Asia/Tokyo
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U labuser -d lab_attendance" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - lab-network
+      - shared-network
 
   # バックエンドAPIサーバー
   backend:
@@ -28,16 +27,27 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: lab-attendance-backend
-    env_file:
-      - .env
     environment:
       PORT: 8080
       ENV: development
       DB_HOST: postgres
-      DB_PORT: 5432
-      DB_SSLMODE: disable
-    ports:
-      - "8080:8080"
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_SSLMODE: ${DB_SSLMODE}
+      JWT_SECRET: ${JWT_SECRET}
+      LAB_LATITUDE: 35.6812
+      LAB_LONGITUDE: 139.7671
+      LAB_RADIUS_METERS: 100
+      LDAP_HOST: ${LDAP_HOST}
+      LDAP_PORT: ${LDAP_PORT}
+      LDAP_BASE_DN: ${LDAP_BASE_DN}
+      LDAP_BIND_USER: ${LDAP_BIND_USER}
+      LDAP_BIND_PASS: ${LDAP_BIND_PASS}
+      LDAP_START_TLS: ${LDAP_START_TLS}
+      LDAP_SKIP_VERIFY: ${LDAP_SKIP_VERIFY}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
     depends_on:
       postgres:
         condition: service_healthy
@@ -45,6 +55,7 @@ services:
     #   - ./backend:/app  # 開発時のホットリロード用（本番では不要）
     networks:
       - lab-network
+      - shared-network
     restart: unless-stopped
 
   # フロントエンド (Nginx + React)
@@ -53,13 +64,12 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: lab-attendance-frontend
-    ports:
-      - "80:80"
     depends_on:
       backend:
         condition: service_started
     networks:
       - lab-network
+      - shared-network
     restart: always
 
   # マイグレーション実行用（プロファイル指定で実行）
@@ -69,12 +79,13 @@ services:
     profiles: [ "migration" ]
     volumes:
       - ./backend/db/migrations:/migrations
-    command: [ "-path", "/migrations", "-database", "postgres://labuser:labpass@postgres:5432/lab_attendance?sslmode=disable", "up" ]
+    command: [ "-path", "/migrations", "-database", "postgres://${DB_USER}:${DB_PASSWORD}@postgres:${DB_PORT}/${DB_NAME}?sslmode=${DB_SSLMODE}", "up" ]
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - lab-network
+      - shared-network
 
 
 volumes:
@@ -84,3 +95,5 @@ volumes:
 networks:
   lab-network:
     driver: bridge
+  shared-network:
+    external: true
