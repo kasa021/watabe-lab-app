@@ -9,7 +9,7 @@ import ProfilePage from './pages/ProfilePage'
 
 function App() {
   return (
-    <Router>
+    <Router basename='/attendance'>
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
